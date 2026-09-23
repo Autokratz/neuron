@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEURON — Become an AI Engineer</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
+</head>
+<body>
+  <div id="boot">
+    <div class="logo">NEURON</div>
+    <div class="spinner"></div>
+    <div class="sub" id="bootsub">starting…</div>
+  </div>
+
+  <div id="toast"></div>
+
+  <div id="hud">
+    <div class="logo">NEU<span>RON</span></div>
+    <div class="stat">LVL <b id="lvl">1</b></div>
+    <div class="xpwrap">
+      <div class="xpbar"><div class="xpfill" id="xpfill"></div></div>
+    </div>
+    <div class="stat"><b id="xpnum">0</b> XP</div>
+    <div class="stat flame">🔥 <b id="streak">0</b> day streak</div>
+    <button class="act" id="btnReset" style="flex:0;padding:6px 12px;font-size:11px;">Reset</button>
+  </div>
+
+  <div id="main">
+    <div id="map">
+      <svg id="edges"></svg>
+      <div id="tree"></div>
+    </div>
+
+    <div id="quest">
+      <div class="qhead">
+        <span class="badge lesson" id="qbadge">LESSON</span>
+        <h2 id="qtitle" style="margin-top:8px;">Quest</h2>
+        <button class="act" id="btnClose" style="position:absolute;top:14px;right:16px;flex:0;padding:4px 10px;font-size:11px;">✕</button>
+      </div>
+      <div class="brief" id="qbrief"></div>
+      <textarea id="editor" spellcheck="false"></textarea>
+      <div id="qfoot">
+        <div class="btnrow">
+          <button class="act run" id="btnRun">▶ Run</button>
+          <button class="act submit" id="btnSubmit">⚡ Submit &amp; Grade</button>
+          <button class="act hint" id="btnHint">💡 Hint</button>
+        </div>
+        <div id="hints"></div>
+        <div id="output"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="quests.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

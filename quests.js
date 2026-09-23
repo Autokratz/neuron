@@ -1,0 +1,558 @@
+// NEURON — content engine. Each quest = brief + starter + hints + hidden tests (real asserts).
+// 8 regions. Front two = Python from ZERO. Back six = the AI stack (pure-Python sims, no backend).
+// Every quest gradeable in-browser via Pyodide.
+
+window.REGIONS = [
+  { id: "python-isle",    name: "Python Isle",     bandTop: 0,    blurb: "Absolute basics: variables, math, strings, if, loops. Start here even if you've never coded." },
+  { id: "data-dunes",     name: "Data Dunes",      bandTop: 300,  blurb: "Lists, dicts, classes — the containers every program uses." },
+  { id: "prompt-peaks",   name: "Prompt Peaks",    bandTop: 600,  blurb: "How LLM apps talk: tokens, messages, context windows." },
+  { id: "math-caverns",   name: "Math Caverns",    bandTop: 900,  blurb: "Just-in-time math: vectors, matrices, gradients." },
+  { id: "ml-forest",      name: "ML Forest",       bandTop: 1200, blurb: "Classic ML: split, metrics, kNN, k-means." },
+  { id: "rag-valley",     name: "RAG Valley",      bandTop: 1500, blurb: "Retrieval: embeddings, cosine, chunking, top-k." },
+  { id: "agent-wastes",   name: "Agent Wastes",    bandTop: 1800, blurb: "Agents: tools, action parsing, ReAct loops." },
+  { id: "deploy-citadel", name: "Deploy Citadel",  bandTop: 2100, blurb: "MLOps: rate limits, retries, caching, eval, guardrails." },
+];
+
+window.QUESTS = [
+  // ============ REGION 1 — PYTHON ISLE (from zero) ============
+  { id:"b-1", region:"python-isle", title:"First Variable", type:"lesson", x:120, y:80, requires:[], xp:80,
+    brief:"Welcome. Never coded? Perfect — start here.\n\nA function is a named box of steps. `return` hands a value back.\n\nDefine answer() that returns the number 42.\n\nThat's it: one line, `return 42`. Stuck? Click 💡 Hint.",
+    starter:"def answer():\n    # replace 'pass' with: return 42\n    pass\n",
+    hints:[
+      "Delete the line `pass` and the comment.",
+      "Inside the function, write exactly one line: `return 42`",
+      "Full answer:\n    def answer():\n        return 42",
+    ],
+    tests:[
+      {name:"returns 42", code:"assert answer() == 42"},
+      {name:"it's a number", code:"assert isinstance(answer(), int)"},
+    ]},
+  { id:"b-2", region:"python-isle", title:"Arithmetic", type:"lesson", x:300, y:40, requires:["b-1"], xp:100,
+    brief:"Functions can take inputs (parameters).\n\nDefine add(a, b) that returns a + b.\n\nadd(2, 3) -> 5",
+    starter:"def add(a, b):\n    pass\n",
+    hints:[
+      "Use the + operator on the two inputs.",
+      "Body: `return a + b`",
+    ],
+    tests:[
+      {name:"adds positives", code:"assert add(2,3)==5"},
+      {name:"adds to zero", code:"assert add(-1,1)==0"},
+      {name:"works with floats", code:"assert abs(add(1.5,2.5)-4.0)<1e-9"},
+    ]},
+  { id:"b-3", region:"python-isle", title:"Joining Strings", type:"lesson", x:300, y:160, requires:["b-1"], xp:100,
+    brief:"Text values are called strings. The + sign glues them together.\n\nDefine join(a, b) that returns the two strings stuck together.\n\njoin('foo', 'bar') -> 'foobar'",
+    starter:"def join(a, b):\n    pass\n",
+    hints:[
+      "Same + as numbers, but on text it concatenates.",
+      "Body: `return a + b`",
+    ],
+    tests:[
+      {name:"glues words", code:"assert join('foo','bar')=='foobar'"},
+      {name:"keeps spaces", code:"assert join('hi ','there')=='hi there'"},
+      {name:"empty string", code:"assert join('','x')=='x'"},
+    ]},
+  { id:"b-4", region:"python-isle", title:"f-Strings", type:"lesson", x:500, y:100, requires:["b-2","b-3"], xp:130,
+    brief:"f-strings drop variables straight into text using {curly braces}.\n\nDefine greet(name) returning:\n  \"Hello, <name>! Welcome to NEURON.\"\n\ngreet('Morgan') -> 'Hello, Morgan! Welcome to NEURON.'",
+    starter:"def greet(name):\n    pass\n",
+    hints:[
+      "Start the string with f and put {name} inside it.",
+      "Punctuation must match exactly: comma, space, then !",
+      "Full: `return f'Hello, {name}! Welcome to NEURON.'`",
+    ],
+    tests:[
+      {name:"greets Morgan", code:"assert greet('Morgan')=='Hello, Morgan! Welcome to NEURON.'"},
+      {name:"greets any name", code:"assert greet('Ada')=='Hello, Ada! Welcome to NEURON.'"},
+    ]},
+  { id:"b-5", region:"python-isle", title:"If / Else", type:"lesson", x:700, y:60, requires:["b-4"], xp:130,
+    brief:"Decisions use if / else.\n\nDefine bigger(a, b) returning the larger value. If they're equal, return a.\n\nbigger(3, 5) -> 5",
+    starter:"def bigger(a, b):\n    pass\n",
+    hints:[
+      "Compare with >=. Pattern: if a >= b: return a",
+      "else: return b",
+      "Full:\n    if a >= b:\n        return a\n    return b",
+    ],
+    tests:[
+      {name:"second bigger", code:"assert bigger(3,5)==5"},
+      {name:"first bigger", code:"assert bigger(9,2)==9"},
+      {name:"equal -> a", code:"assert bigger(4,4)==4"},
+    ]},
+  { id:"b-6", region:"python-isle", title:"Loops", type:"lesson", x:700, y:180, requires:["b-4"], xp:150,
+    brief:"Loops repeat work. range(1, n+1) counts 1..n.\n\nDefine sum_to(n): add up every number from 1 to n.\n\nsum_to(5) -> 15  (1+2+3+4+5)",
+    starter:"def sum_to(n):\n    total = 0\n    # loop and add each number to total\n    return total\n",
+    hints:[
+      "for i in range(1, n+1):",
+      "Inside the loop: total = total + i  (or total += i)",
+      "Full body:\n    total = 0\n    for i in range(1, n+1):\n        total += i\n    return total",
+    ],
+    tests:[
+      {name:"sum 1..5", code:"assert sum_to(5)==15"},
+      {name:"sum 1..1", code:"assert sum_to(1)==1"},
+      {name:"zero", code:"assert sum_to(0)==0"},
+    ]},
+  { id:"b-boss", region:"python-isle", title:"BOSS: FizzBuzz", type:"boss", x:880, y:120, requires:["b-5","b-6"], xp:300,
+    brief:"BOSS. The classic first-job interview question.\n\nDefine fizzbuzz(n): return a list for numbers 1..n where\n  - multiples of 3 AND 5 -> 'FizzBuzz'\n  - multiples of 3 -> 'Fizz'\n  - multiples of 5 -> 'Buzz'\n  - otherwise -> the number as a string\n\nfizzbuzz(5) -> ['1','2','Fizz','4','Buzz']",
+    starter:"def fizzbuzz(n):\n    out = []\n    for i in range(1, n+1):\n        # decide what to append\n        pass\n    return out\n",
+    hints:[
+      "Check the 15 case FIRST: if i % 15 == 0: out.append('FizzBuzz')",
+      "Then elif i % 3 == 0 -> 'Fizz', elif i % 5 == 0 -> 'Buzz', else str(i)",
+      "% is remainder. i % 3 == 0 means 'divisible by 3'. Append str(i) in the else.",
+    ],
+    tests:[
+      {name:"1..5", code:"assert fizzbuzz(5)==['1','2','Fizz','4','Buzz']"},
+      {name:"FizzBuzz at 15", code:"assert fizzbuzz(15)[-1]=='FizzBuzz'"},
+      {name:"Fizz at 3", code:"assert fizzbuzz(3)==['1','2','Fizz']"},
+      {name:"length n", code:"assert len(fizzbuzz(10))==10"},
+    ]},
+
+  // ============ REGION 2 — DATA DUNES (lists, dicts, classes) ============
+  { id:"d-1", region:"data-dunes", title:"Lists", type:"lesson", x:120, y:380, requires:["b-boss"], xp:150,
+    brief:"A list holds many values in order. lst[0] is first, lst[-1] is last.\n\nDefine first_last(lst): return a new list [first item, last item].\n\nfirst_last([1,2,3]) -> [1,3]",
+    starter:"def first_last(lst):\n    pass\n",
+    hints:[
+      "lst[0] is the first element, lst[-1] is the last.",
+      "Return them inside square brackets: `return [lst[0], lst[-1]]`",
+    ],
+    tests:[
+      {name:"three items", code:"assert first_last([1,2,3])==[1,3]"},
+      {name:"single item", code:"assert first_last([9])==[9,9]"},
+      {name:"strings", code:"assert first_last(['a','b'])==['a','b']"},
+    ]},
+  { id:"d-2", region:"data-dunes", title:"Build a List", type:"lesson", x:300, y:340, requires:["d-1"], xp:170,
+    brief:"Define squares(n): return the list of squares from 1 to n.\n\nsquares(3) -> [1, 4, 9]   (1*1, 2*2, 3*3)",
+    starter:"def squares(n):\n    out = []\n    return out\n",
+    hints:[
+      "Loop i in range(1, n+1), append i*i to out.",
+      "Or one line: `return [i*i for i in range(1, n+1)]`",
+    ],
+    tests:[
+      {name:"1..3", code:"assert squares(3)==[1,4,9]"},
+      {name:"single", code:"assert squares(1)==[1]"},
+      {name:"zero -> empty", code:"assert squares(0)==[]"},
+    ]},
+  { id:"d-3", region:"data-dunes", title:"Word Tally", type:"lesson", x:300, y:460, requires:["d-1"], xp:200,
+    brief:"Define word_count(text): a dict of lowercased word -> how many times it appears. Split on spaces.\n\nword_count('a a B') -> {'a':2, 'b':1}",
+    starter:"def word_count(text):\n    counts = {}\n    return counts\n",
+    hints:[
+      "Loop over text.lower().split() to get lowercase words.",
+      "counts[word] = counts.get(word, 0) + 1  — .get returns 0 if word unseen.",
+    ],
+    tests:[
+      {name:"counts repeats", code:"assert word_count('a a B')=={'a':2,'b':1}"},
+      {name:"case-insensitive", code:"assert word_count('Hi hi HI')=={'hi':3}"},
+      {name:"empty", code:"assert word_count('')=={}"},
+    ]},
+  { id:"d-4", region:"data-dunes", title:"Dict Lookup", type:"lesson", x:500, y:400, requires:["d-2","d-3"], xp:170,
+    brief:"Dicts map keys to values, like a menu.\n\nDefine get_price(menu, item): return the item's price, or 0 if it's not on the menu.\n\nget_price({'tea':3}, 'tea') -> 3 ; get_price({'tea':3}, 'pie') -> 0",
+    starter:"def get_price(menu, item):\n    pass\n",
+    hints:[
+      ".get handles the missing case for you.",
+      "Body: `return menu.get(item, 0)`",
+    ],
+    tests:[
+      {name:"found", code:"assert get_price({'tea':3,'pie':5},'tea')==3"},
+      {name:"missing -> 0", code:"assert get_price({'tea':3},'cake')==0"},
+      {name:"empty menu", code:"assert get_price({}, 'x')==0"},
+    ]},
+  { id:"d-5", region:"data-dunes", title:"Classes (OOP)", type:"lesson", x:700, y:400, requires:["d-4"], xp:230,
+    brief:"A class bundles data + actions. Programs (and agents) hold state this way.\n\nBuild class Cart:\n  .add(item, price)\n  .total() -> sum of prices\n  .count() -> number of items\nStart empty.",
+    starter:"class Cart:\n    def __init__(self):\n        self.items = []\n\n    def add(self, item, price):\n        pass\n\n    def total(self):\n        pass\n\n    def count(self):\n        pass\n",
+    hints:[
+      "self.items is your storage. add appends a (item, price) pair.",
+      "total: `return sum(p for _, p in self.items)`. count: `return len(self.items)`.",
+    ],
+    tests:[
+      {name:"starts empty", code:"c=Cart(); assert c.total()==0 and c.count()==0"},
+      {name:"adds items", code:"c=Cart(); c.add('a',2); c.add('b',3); assert c.count()==2"},
+      {name:"totals price", code:"c=Cart(); c.add('a',2.5); c.add('b',3.5); assert c.total()==6.0"},
+      {name:"independent", code:"a=Cart(); b=Cart(); a.add('x',1); assert b.count()==0"},
+    ]},
+  { id:"d-boss", region:"data-dunes", title:"BOSS: Prompt Engine", type:"boss", x:880, y:400, requires:["d-5"], xp:400,
+    brief:"BOSS. Your first AI building block: a prompt template.\n\nDefine render_prompt(template, **vars): replace every {key} with its value. A {key} with no value -> raise KeyError.\n\nrender_prompt('Hi {name}', name='Ada') -> 'Hi Ada'",
+    starter:"def render_prompt(template, **vars):\n    pass\n",
+    hints:[
+      "Python strings have a .format method that does {key} substitution.",
+      ".format already raises KeyError on a missing key, so: `return template.format(**vars)`",
+    ],
+    tests:[
+      {name:"fills vars", code:"assert render_prompt('Hi {name}, role={role}', name='Ada', role='eng')=='Hi Ada, role=eng'"},
+      {name:"single", code:"assert render_prompt('{x}!', x='go')=='go!'"},
+      {name:"no placeholders", code:"assert render_prompt('static')=='static'"},
+      {name:"missing raises", code:"try:\n    render_prompt('{missing}')\n    raise AssertionError('should raise KeyError')\nexcept KeyError:\n    pass"},
+    ]},
+
+  // ============ REGION 3 — PROMPT PEAKS ============
+  { id:"pp-1", region:"prompt-peaks", title:"Chat Builder", type:"lesson", x:120, y:680, requires:["d-boss"], xp:200,
+    brief:"Chat APIs take a list of role messages.\n\nDefine build_messages(system, user) ->\n  [{'role':'system','content':system},\n   {'role':'user','content':user}]",
+    starter:"def build_messages(system, user):\n    pass\n",
+    hints:[
+      "Return a list of two dicts.",
+      "Each dict has keys 'role' and 'content'. System first, user second.",
+    ],
+    tests:[
+      {name:"two messages", code:"m=build_messages('be helpful','hi'); assert len(m)==2"},
+      {name:"system first", code:"m=build_messages('S','U'); assert m[0]=={'role':'system','content':'S'}"},
+      {name:"user second", code:"m=build_messages('S','U'); assert m[1]=={'role':'user','content':'U'}"},
+    ]},
+  { id:"pp-2", region:"prompt-peaks", title:"Few-Shot Prompt", type:"lesson", x:300, y:640, requires:["pp-1"], xp:200,
+    brief:"Few-shot = show examples before the query.\n\nDefine few_shot(examples, query). examples = list of (inp,out).\nFor each example add: 'Input: <inp>\\nOutput: <out>\\n'\nthen end with: 'Input: <query>\\nOutput:'\n\nfew_shot([('hi','HI')],'bye') -> 'Input: hi\\nOutput: HI\\nInput: bye\\nOutput:'",
+    starter:"def few_shot(examples, query):\n    pass\n",
+    hints:[
+      "Build a string s. Loop the examples, add f'Input: {i}\\nOutput: {o}\\n' for each.",
+      "After the loop append f'Input: {query}\\nOutput:' (no trailing newline).",
+    ],
+    tests:[
+      {name:"one example", code:"assert few_shot([('hi','HI')],'bye')=='Input: hi\\nOutput: HI\\nInput: bye\\nOutput:'"},
+      {name:"two examples", code:"assert few_shot([('a','A'),('b','B')],'c')=='Input: a\\nOutput: A\\nInput: b\\nOutput: B\\nInput: c\\nOutput:'"},
+      {name:"zero examples", code:"assert few_shot([],'x')=='Input: x\\nOutput:'"},
+    ]},
+  { id:"pp-3", region:"prompt-peaks", title:"Token Budget", type:"lesson", x:300, y:760, requires:["pp-1"], xp:200,
+    brief:"Context windows are finite. Drop the OLDEST messages until the rest fit.\n\nDefine fit_context(messages, max_tokens). messages = list of strings.\nTokens of a message = number of whitespace words. Drop from the FRONT until total <= max_tokens. Return what remains.",
+    starter:"def fit_context(messages, max_tokens):\n    pass\n",
+    hints:[
+      "Copy the list. While total tokens > max_tokens, pop index 0.",
+      "Tokens of all: sum(len(m.split()) for m in msgs).",
+    ],
+    tests:[
+      {name:"already fits", code:"assert fit_context(['a b','c'], 5)==['a b','c']"},
+      {name:"drops oldest", code:"assert fit_context(['a b c','d e','f'], 3)==['d e','f']"},
+      {name:"drops several", code:"assert fit_context(['a b','c d','e f','g'], 3)==['e f','g']"},
+      {name:"empty", code:"assert fit_context([], 5)==[]"},
+    ]},
+  { id:"pp-4", region:"prompt-peaks", title:"Stream Assembler", type:"lesson", x:500, y:700, requires:["pp-2","pp-3"], xp:250,
+    brief:"LLMs stream chunks. Assemble them, but STOP at the stop token '<END>' (exclude it and anything after).\n\nDefine assemble(chunks) -> joined string up to (not including) '<END>'.\n\nassemble(['He','llo','<END>','x']) -> 'Hello'",
+    starter:"def assemble(chunks):\n    pass\n",
+    hints:[
+      "Loop chunks, break when you see '<END>'.",
+      "Otherwise add the chunk to an output string, then return it.",
+    ],
+    tests:[
+      {name:"joins", code:"assert assemble(['He','llo'])=='Hello'"},
+      {name:"stops at END", code:"assert assemble(['He','llo','<END>','x'])=='Hello'"},
+      {name:"END first", code:"assert assemble(['<END>','a'])==''"},
+      {name:"no END", code:"assert assemble(['a','b','c'])=='abc'"},
+    ]},
+  { id:"pp-boss", region:"prompt-peaks", title:"BOSS: Chat Session", type:"boss", x:700, y:700, requires:["pp-4"], xp:450,
+    brief:"BOSS. Stateful conversation manager.\n\nclass Chat:\n  Chat(system) stores a system message first.\n  .send(user) appends the user msg, appends assistant reply 'echo: <user>', returns the FULL message list.\n  .history() returns the full message list.\n\nMessages are role dicts; system is always {'role':'system','content':system}.",
+    starter:"class Chat:\n    def __init__(self, system):\n        pass\n\n    def send(self, user):\n        pass\n\n    def history(self):\n        pass\n",
+    hints:[
+      "In __init__ store self.msgs = [{'role':'system','content':system}].",
+      "send appends two dicts (user, then assistant 'echo: '+user) and returns self.msgs.",
+    ],
+    tests:[
+      {name:"starts with system", code:"c=Chat('S'); assert c.history()==[{'role':'system','content':'S'}]"},
+      {name:"send returns full", code:"c=Chat('S'); h=c.send('hi'); assert h[1]=={'role':'user','content':'hi'} and h[2]=={'role':'assistant','content':'echo: hi'}"},
+      {name:"stateful", code:"c=Chat('S'); c.send('a'); c.send('b'); assert len(c.history())==5"},
+    ]},
+
+  // ============ REGION 4 — MATH CAVERNS ============
+  { id:"mc-1", region:"math-caverns", title:"Dot Product", type:"lesson", x:120, y:980, requires:["pp-boss"], xp:200,
+    brief:"Embeddings live and die by the dot product.\n\nDefine dot(a, b): sum of a[i]*b[i].\n\ndot([1,2,3],[4,5,6]) -> 32",
+    starter:"def dot(a, b):\n    pass\n",
+    hints:[
+      "zip(a, b) pairs them up.",
+      "`return sum(x*y for x, y in zip(a, b))`",
+    ],
+    tests:[
+      {name:"basic", code:"assert dot([1,2,3],[4,5,6])==32"},
+      {name:"zeros", code:"assert dot([0,0],[5,9])==0"},
+      {name:"floats", code:"assert abs(dot([1.5,2.0],[2.0,1.0])-5.0)<1e-9"},
+    ]},
+  { id:"mc-2", region:"math-caverns", title:"Matrix Multiply", type:"lesson", x:300, y:940, requires:["mc-1"], xp:250,
+    brief:"Neural nets = matrix multiplies.\n\nDefine matmul(A, B): multiply two matrices (lists of lists). Return the product.\n\nmatmul([[1,2],[3,4]], [[5,6],[7,8]]) -> [[19,22],[43,50]]",
+    starter:"def matmul(A, B):\n    pass\n",
+    hints:[
+      "Result[i][j] = sum over k of A[i][k]*B[k][j].",
+      "Three loops (or nested comprehensions): i over rows of A, j over cols of B, k inner.",
+    ],
+    tests:[
+      {name:"2x2", code:"assert matmul([[1,2],[3,4]],[[5,6],[7,8]])==[[19,22],[43,50]]"},
+      {name:"identity", code:"assert matmul([[1,0],[0,1]],[[9,8],[7,6]])==[[9,8],[7,6]]"},
+      {name:"non-square", code:"assert matmul([[1,2,3]],[[1],[1],[1]])==[[6]]"},
+    ]},
+  { id:"mc-3", region:"math-caverns", title:"Activations", type:"lesson", x:300, y:1060, requires:["mc-1"], xp:250,
+    brief:"Define sigmoid(x) = 1/(1+e^-x), and softmax(xs) -> list that sums to 1.\n\nsoftmax([0,0]) -> [0.5, 0.5]",
+    starter:"import math\n\ndef sigmoid(x):\n    pass\n\ndef softmax(xs):\n    pass\n",
+    hints:[
+      "sigmoid: `return 1/(1+math.exp(-x))`",
+      "softmax: e=[math.exp(v) for v in xs]; s=sum(e); return [v/s for v in e]",
+    ],
+    tests:[
+      {name:"sigmoid(0)=0.5", code:"assert abs(sigmoid(0)-0.5)<1e-9"},
+      {name:"sigmoid big", code:"assert sigmoid(100)>0.99"},
+      {name:"softmax sums 1", code:"s=softmax([1,2,3]); assert abs(sum(s)-1.0)<1e-9"},
+      {name:"softmax uniform", code:"s=softmax([0,0]); assert abs(s[0]-0.5)<1e-9"},
+    ]},
+  { id:"mc-4", region:"math-caverns", title:"Loss Function", type:"lesson", x:500, y:1000, requires:["mc-2","mc-3"], xp:250,
+    brief:"Training minimizes loss.\n\nDefine mse(pred, true): mean of (pred[i]-true[i])^2.\n\nmse([2,3],[1,3]) -> 0.5",
+    starter:"def mse(pred, true):\n    pass\n",
+    hints:[
+      "Square each difference, average them.",
+      "`return sum((p-t)**2 for p,t in zip(pred,true))/len(pred)`",
+    ],
+    tests:[
+      {name:"basic", code:"assert abs(mse([2,3],[1,3])-0.5)<1e-9"},
+      {name:"perfect=0", code:"assert mse([1,2,3],[1,2,3])==0"},
+      {name:"single", code:"assert abs(mse([5],[2])-9.0)<1e-9"},
+    ]},
+  { id:"mc-boss", region:"math-caverns", title:"BOSS: Gradient Descent", type:"boss", x:700, y:1000, requires:["mc-4"], xp:500,
+    brief:"BOSS. ONE step of gradient descent on y = w*x + b, MSE loss.\n\nDefine grad_step(xs, ys, w, b, lr): return new (w, b) after one step.\n\npred = w*x+b. dw = mean(2*(pred-y)*x), db = mean(2*(pred-y)). new = old - lr*grad.",
+    starter:"def grad_step(xs, ys, w, b, lr):\n    pass\n",
+    hints:[
+      "Compute preds = [w*x+b for x in xs]. n = len(xs).",
+      "dw = sum(2*(p-y)*x ...)/n ; db = sum(2*(p-y) ...)/n ; return (w-lr*dw, b-lr*db).",
+    ],
+    tests:[
+      {name:"returns pair", code:"r=grad_step([1,2],[2,4],0.0,0.0,0.1); assert len(r)==2"},
+      {name:"moves toward fit", code:"w,b=grad_step([1,2,3],[2,4,6],0.0,0.0,0.01); assert w>0 and b>0"},
+      {name:"exact step", code:"w,b=grad_step([1.0],[1.0],0.0,0.0,0.1); assert abs(w-0.2)<1e-9 and abs(b-0.2)<1e-9"},
+      {name:"at optimum stays", code:"w,b=grad_step([1,2],[1,2],1.0,0.0,0.1); assert abs(w-1.0)<1e-9 and abs(b-0.0)<1e-9"},
+    ]},
+
+  // ============ REGION 5 — ML FOREST ============
+  { id:"mf-1", region:"ml-forest", title:"Train/Test Split", type:"lesson", x:120, y:1280, requires:["mc-boss"], xp:250,
+    brief:"Never test on training data.\n\nDefine split(data, frac): first frac of the list = train, rest = test. Use int(len*frac) as the cut. Return (train, test).\n\nsplit([1,2,3,4],0.5) -> ([1,2],[3,4])",
+    starter:"def split(data, frac):\n    pass\n",
+    hints:[
+      "cut = int(len(data)*frac)",
+      "`return (data[:cut], data[cut:])`",
+    ],
+    tests:[
+      {name:"half", code:"assert split([1,2,3,4],0.5)==([1,2],[3,4])"},
+      {name:"75%", code:"assert split([1,2,3,4],0.75)==([1,2,3],[4])"},
+      {name:"all train", code:"assert split([1,2,3],1.0)==([1,2,3],[])"},
+    ]},
+  { id:"mf-2", region:"ml-forest", title:"Metrics", type:"lesson", x:300, y:1240, requires:["mf-1"], xp:250,
+    brief:"Define accuracy(pred, true): fraction of positions that match.\n\naccuracy([1,0,1],[1,1,1]) -> 0.666...",
+    starter:"def accuracy(pred, true):\n    pass\n",
+    hints:[
+      "Count matches with sum(p==t for p,t in zip(pred,true)).",
+      "Divide by len(pred).",
+    ],
+    tests:[
+      {name:"perfect", code:"assert accuracy([1,1],[1,1])==1.0"},
+      {name:"partial", code:"assert abs(accuracy([1,0,1],[1,1,1])-2/3)<1e-9"},
+      {name:"none", code:"assert accuracy([0,0],[1,1])==0.0"},
+    ]},
+  { id:"mf-3", region:"ml-forest", title:"k-NN Classify", type:"lesson", x:300, y:1360, requires:["mf-1"], xp:300,
+    brief:"Define knn(train, labels, x, k): train = list of points, labels parallel. Return the majority label among the k nearest (Euclidean) points to x. (Tests avoid ties.)",
+    starter:"def knn(train, labels, x, k):\n    pass\n",
+    hints:[
+      "Sort indices by distance: sum((a-b)**2 for a,b in zip(point, x)).",
+      "Take labels of the k closest, return the most common (max(set(top), key=top.count)).",
+    ],
+    tests:[
+      {name:"k=1", code:"assert knn([[0,0],[10,10]],['a','b'],[1,1],1)=='a'"},
+      {name:"k=3 majority", code:"assert knn([[0],[0.1],[0.2],[9],[9.1]],['a','a','a','b','b'],[0.05],3)=='a'"},
+      {name:"other side", code:"assert knn([[0,0],[10,10]],['a','b'],[9,9],1)=='b'"},
+    ]},
+  { id:"mf-4", region:"ml-forest", title:"Normalize", type:"lesson", x:500, y:1300, requires:["mf-2","mf-3"], xp:250,
+    brief:"Define minmax(col): scale a list to 0..1 via (x-min)/(max-min). If all values equal, return all 0.0.\n\nminmax([0,5,10]) -> [0.0,0.5,1.0]",
+    starter:"def minmax(col):\n    pass\n",
+    hints:[
+      "lo, hi = min(col), max(col). Guard the all-equal case (hi==lo).",
+      "`return [(x-lo)/(hi-lo) for x in col]` when hi != lo.",
+    ],
+    tests:[
+      {name:"basic", code:"assert minmax([0,5,10])==[0.0,0.5,1.0]"},
+      {name:"all equal -> 0", code:"assert minmax([3,3,3])==[0.0,0.0,0.0]"},
+      {name:"negatives", code:"assert minmax([-10,0,10])==[0.0,0.5,1.0]"},
+    ]},
+  { id:"mf-boss", region:"ml-forest", title:"BOSS: k-Means Step", type:"boss", x:700, y:1300, requires:["mf-4"], xp:500,
+    brief:"BOSS. ONE iteration of k-means (1-D points).\n\nDefine kmeans_step(points, centroids): assign each point to its nearest centroid, then return NEW centroids = mean of points assigned to each. A centroid with no points keeps its old value.",
+    starter:"def kmeans_step(points, centroids):\n    pass\n",
+    hints:[
+      "Make a bucket list per centroid. Assign each point to argmin abs(point-centroid).",
+      "New centroid = mean(bucket) if non-empty else the old centroid.",
+    ],
+    tests:[
+      {name:"two clusters", code:"assert kmeans_step([0,1,10,11],[0,10])==[0.5,10.5]"},
+      {name:"empty cluster keeps", code:"assert kmeans_step([0,1],[0,100])==[0.5,100]"},
+      {name:"converged stays", code:"assert kmeans_step([0,2],[0,2])==[0,2]"},
+    ]},
+
+  // ============ REGION 6 — RAG VALLEY ============
+  { id:"rv-1", region:"rag-valley", title:"Cosine Similarity", type:"lesson", x:120, y:1580, requires:["mf-boss"], xp:250,
+    brief:"Retrieval ranks by cosine similarity.\n\nDefine cosine(a, b) = dot(a,b)/(|a|*|b|). Assume non-zero vectors.\n\ncosine([1,0],[1,0]) -> 1.0",
+    starter:"import math\n\ndef cosine(a, b):\n    pass\n",
+    hints:[
+      "Numerator = sum(x*y for x,y in zip(a,b)).",
+      "Denominator = sqrt(sum x^2) * sqrt(sum y^2).",
+    ],
+    tests:[
+      {name:"identical=1", code:"assert abs(cosine([1,0],[1,0])-1.0)<1e-9"},
+      {name:"orthogonal=0", code:"assert abs(cosine([1,0],[0,1]))<1e-9"},
+      {name:"scaled=1", code:"assert abs(cosine([1,2],[2,4])-1.0)<1e-9"},
+    ]},
+  { id:"rv-2", region:"rag-valley", title:"Embed (Bag-of-Words)", type:"lesson", x:300, y:1540, requires:["rv-1"], xp:250,
+    brief:"Define embed(text, vocab): vector of counts — how many times each vocab word appears in text (lowercased, whitespace split), in vocab order.\n\nembed('a a b', ['a','b','c']) -> [2,1,0]",
+    starter:"def embed(text, vocab):\n    pass\n",
+    hints:[
+      "words = text.lower().split()",
+      "`return [words.count(v) for v in vocab]`",
+    ],
+    tests:[
+      {name:"counts", code:"assert embed('a a b', ['a','b','c'])==[2,1,0]"},
+      {name:"case-insensitive", code:"assert embed('A b', ['a','b'])==[1,1]"},
+      {name:"empty text", code:"assert embed('', ['a','b'])==[0,0]"},
+    ]},
+  { id:"rv-3", region:"rag-valley", title:"Chunking", type:"lesson", x:300, y:1660, requires:["rv-1"], xp:300,
+    brief:"Long docs get chunked with overlap.\n\nDefine chunk(words, size, overlap): split list into chunks of `size`, sliding by (size-overlap). Return list of chunks.\n\nchunk([1,2,3,4,5],3,1) -> [[1,2,3],[3,4,5],[5]]",
+    starter:"def chunk(words, size, overlap):\n    pass\n",
+    hints:[
+      "step = size - overlap. Walk i from 0 by step.",
+      "Append words[i:i+size] each loop; stop when i >= len(words).",
+    ],
+    tests:[
+      {name:"overlap 1", code:"assert chunk([1,2,3,4,5],3,1)==[[1,2,3],[3,4,5],[5]]"},
+      {name:"no overlap", code:"assert chunk([1,2,3,4],2,0)==[[1,2],[3,4]]"},
+      {name:"size>=len", code:"assert chunk([1,2],5,0)==[[1,2]]"},
+    ]},
+  { id:"rv-4", region:"rag-valley", title:"Top-K Retrieval", type:"lesson", x:500, y:1600, requires:["rv-2","rv-3"], xp:300,
+    brief:"Define top_k(q, docs, k): q and docs[i] are vectors. Return the indices of the k docs most similar to q (cosine), best first. (cosine is provided.)",
+    starter:"import math\n\ndef cosine(a, b):\n    d=sum(x*y for x,y in zip(a,b))\n    na=math.sqrt(sum(x*x for x in a)); nb=math.sqrt(sum(y*y for y in b))\n    return d/(na*nb)\n\ndef top_k(q, docs, k):\n    pass\n",
+    hints:[
+      "Sort indices by cosine(q, docs[i]) descending.",
+      "sorted(range(len(docs)), key=lambda i: cosine(q,docs[i]), reverse=True)[:k]",
+    ],
+    tests:[
+      {name:"best first", code:"assert top_k([1,0],[[0,1],[1,0],[1,1]],1)==[1]"},
+      {name:"top 2", code:"assert top_k([1,0],[[0,1],[1,0],[2,0]],2)==[1,2]"},
+      {name:"k all", code:"assert set(top_k([1,1],[[1,0],[0,1]],2))=={0,1}"},
+    ]},
+  { id:"rv-boss", region:"rag-valley", title:"BOSS: RAG Retrieve", type:"boss", x:700, y:1600, requires:["rv-4"], xp:550,
+    brief:"BOSS. Full retrieval pipeline.\n\nDefine retrieve(query, docs, k): docs = list of strings. Build a shared vocab = sorted set of all words in query+docs (lowercased). Embed each as bag-of-words counts, rank docs by cosine to the query, return the top-k doc STRINGS, best first.",
+    starter:"import math\n\ndef retrieve(query, docs, k):\n    pass\n",
+    hints:[
+      "vocab = sorted(set(all words in query + every doc)).",
+      "Embed query + each doc to count vectors, sort docs by cosine, slice top k, return the strings.",
+    ],
+    tests:[
+      {name:"finds match", code:"assert retrieve('cat', ['the cat sat','a dog ran'], 1)==['the cat sat']"},
+      {name:"ranks topic", code:"r=retrieve('python code', ['python is code','bananas are yellow','code in python'], 2); assert 'bananas are yellow' not in r"},
+      {name:"returns k", code:"assert len(retrieve('a b c', ['a b','b c','x y','a c'], 2))==2"},
+    ]},
+
+  // ============ REGION 7 — AGENT WASTES ============
+  { id:"aw-1", region:"agent-wastes", title:"Tool Dispatch", type:"lesson", x:120, y:1880, requires:["rv-boss"], xp:300,
+    brief:"Agents call tools by name.\n\nDefine run_tool(registry, name, arg): registry maps name -> function. Call the matching function with arg and return its result. Unknown name -> return 'unknown tool'.",
+    starter:"def run_tool(registry, name, arg):\n    pass\n",
+    hints:[
+      "Check `if name in registry`.",
+      "Call it: `return registry[name](arg)`. Else return 'unknown tool'.",
+    ],
+    tests:[
+      {name:"calls tool", code:"assert run_tool({'up': str.upper}, 'up', 'hi')=='HI'"},
+      {name:"another tool", code:"assert run_tool({'len': len}, 'len', [1,2,3])==3"},
+      {name:"unknown", code:"assert run_tool({}, 'nope', 'x')=='unknown tool'"},
+    ]},
+  { id:"aw-2", region:"agent-wastes", title:"Parse Action", type:"lesson", x:300, y:1840, requires:["aw-1"], xp:300,
+    brief:"Parse a tool call out of LLM text.\n\nDefine parse_action(text): find 'Action: <tool>[<arg>]' and return (tool, arg). If none, return None.\n\nparse_action('thinking... Action: search[cats]') -> ('search','cats')",
+    starter:"import re\n\ndef parse_action(text):\n    pass\n",
+    hints:[
+      "Regex: r'Action:\\s*(\\w+)\\[(.*?)\\]'",
+      "m = re.search(pattern, text); if m: return (m.group(1), m.group(2)) else None.",
+    ],
+    tests:[
+      {name:"extracts", code:"assert parse_action('Action: search[cats]')==('search','cats')"},
+      {name:"with prefix", code:"assert parse_action('hmm Action: calc[1+1] done')==('calc','1+1')"},
+      {name:"none", code:"assert parse_action('no action here') is None"},
+    ]},
+  { id:"aw-3", region:"agent-wastes", title:"Backoff Delays", type:"lesson", x:300, y:1960, requires:["aw-1"], xp:250,
+    brief:"APIs fail; retry with exponential backoff.\n\nDefine backoff(retries, base): return [base*2^0, base*2^1, ...] of length retries.\n\nbackoff(3, 1) -> [1,2,4]",
+    starter:"def backoff(retries, base):\n    pass\n",
+    hints:[
+      "2^i is `2**i` in Python.",
+      "`return [base*(2**i) for i in range(retries)]`",
+    ],
+    tests:[
+      {name:"three", code:"assert backoff(3,1)==[1,2,4]"},
+      {name:"base 2", code:"assert backoff(4,2)==[2,4,8,16]"},
+      {name:"zero", code:"assert backoff(0,5)==[]"},
+    ]},
+  { id:"aw-4", region:"agent-wastes", title:"ReAct Loop", type:"lesson", x:500, y:1900, requires:["aw-2","aw-3"], xp:350,
+    brief:"Run a reason-act loop over a script of steps.\n\nDefine run_react(steps, tools): steps = list of (tool, arg). Apply each tool to its arg in order, collecting results. If any result is the string 'DONE', stop immediately (include the DONE).",
+    starter:"def run_react(steps, tools):\n    pass\n",
+    hints:[
+      "Loop (name, arg) in steps; r = tools[name](arg); append r.",
+      "After appending, `if r == 'DONE': break`.",
+    ],
+    tests:[
+      {name:"runs all", code:"assert run_react([('up','a'),('up','b')],{'up':str.upper})==['A','B']"},
+      {name:"stops on DONE", code:"assert run_react([('f','x'),('f','y')],{'f':lambda a:'DONE' if a=='x' else a})==['DONE']"},
+      {name:"empty", code:"assert run_react([],{})==[]"},
+    ]},
+  { id:"aw-boss", region:"agent-wastes", title:"BOSS: Tool Agent", type:"boss", x:700, y:1900, requires:["aw-4"], xp:550,
+    brief:"BOSS. An agent that routes a question to the right tool.\n\nDefine solve(question, tools): tools has 'calc' and 'search'.\n  - starts with 'calc:' -> tools['calc'] on the rest (stripped)\n  - starts with 'find:' -> tools['search'] on the rest (stripped)\n  - else -> 'cannot answer'",
+    starter:"def solve(question, tools):\n    pass\n",
+    hints:[
+      "question.startswith('calc:') -> tools['calc'](question[5:].strip()).",
+      "Same shape for 'find:' with tools['search']; else return 'cannot answer'.",
+    ],
+    tests:[
+      {name:"routes calc", code:"assert solve('calc: 2+2', {'calc':lambda s:eval(s),'search':lambda s:s})==4"},
+      {name:"routes search", code:"assert solve('find: cats', {'calc':lambda s:0,'search':lambda s:'found '+s})=='found cats'"},
+      {name:"unknown", code:"assert solve('hello', {'calc':lambda s:0,'search':lambda s:s})=='cannot answer'"},
+    ]},
+
+  // ============ REGION 8 — DEPLOY CITADEL ============
+  { id:"dc-1", region:"deploy-citadel", title:"Rate Limiter", type:"lesson", x:120, y:2180, requires:["aw-boss"], xp:300,
+    brief:"Protect your API budget.\n\nclass RateLimiter(capacity): .allow() returns True up to `capacity` times, then False.\n\nr=RateLimiter(2); r.allow()#T; r.allow()#T; r.allow()#F",
+    starter:"class RateLimiter:\n    def __init__(self, capacity):\n        pass\n\n    def allow(self):\n        pass\n",
+    hints:[
+      "Store capacity and a used counter in __init__.",
+      "allow: if used < cap, increment and return True, else return False.",
+    ],
+    tests:[
+      {name:"allows capacity", code:"r=RateLimiter(2); assert r.allow()==True and r.allow()==True"},
+      {name:"blocks after", code:"r=RateLimiter(1); r.allow(); assert r.allow()==False"},
+      {name:"independent", code:"a=RateLimiter(1); b=RateLimiter(1); a.allow(); assert b.allow()==True"},
+    ]},
+  { id:"dc-2", region:"deploy-citadel", title:"Retry Wrapper", type:"lesson", x:300, y:2140, requires:["dc-1"], xp:300,
+    brief:"Define retry(fn, attempts): call fn() up to `attempts` times. Return its result on first success. If it raises every time, re-raise the last exception.",
+    starter:"def retry(fn, attempts):\n    pass\n",
+    hints:[
+      "Loop attempts times in a try/except; return on success.",
+      "Keep the last exception; after the loop, raise it.",
+    ],
+    tests:[
+      {name:"first try", code:"assert retry(lambda:42, 3)==42"},
+      {name:"flaky then ok", code:"st={'n':0}\ndef f():\n    st['n']+=1\n    if st['n']<2: raise ValueError('x')\n    return 'ok'\nassert retry(f,3)=='ok'"},
+      {name:"always fails", code:"def g():\n    raise RuntimeError('boom')\ntry:\n    retry(g,2)\n    raise AssertionError('should raise')\nexcept RuntimeError:\n    pass"},
+    ]},
+  { id:"dc-3", region:"deploy-citadel", title:"Cache Layer", type:"lesson", x:300, y:2260, requires:["dc-1"], xp:300,
+    brief:"Cache expensive LLM calls.\n\nDefine make_cached(fn): return a new function that caches results by argument, so fn runs only once per distinct arg.",
+    starter:"def make_cached(fn):\n    pass\n",
+    hints:[
+      "Define an inner function that closes over a cache dict.",
+      "if x not in cache: cache[x]=fn(x); return cache[x]. Return the inner function.",
+    ],
+    tests:[
+      {name:"caches", code:"calls={'n':0}\ndef slow(x):\n    calls['n']+=1\n    return x*2\nc=make_cached(slow)\nassert c(5)==10 and c(5)==10 and calls['n']==1"},
+      {name:"distinct args", code:"calls={'n':0}\ndef slow(x):\n    calls['n']+=1\n    return x\nc=make_cached(slow); c(1); c(2); c(1)\nassert calls['n']==2"},
+    ]},
+  { id:"dc-4", region:"deploy-citadel", title:"Eval Harness", type:"lesson", x:500, y:2200, requires:["dc-2","dc-3"], xp:350,
+    brief:"You can't ship what you can't measure.\n\nDefine evaluate(fn, cases): cases = list of (input, expected). Return the PASS RATE (fraction where fn(input)==expected).",
+    starter:"def evaluate(fn, cases):\n    pass\n",
+    hints:[
+      "Count passes: sum(1 for i,e in cases if fn(i)==e).",
+      "Divide by len(cases).",
+    ],
+    tests:[
+      {name:"all pass", code:"assert evaluate(lambda x:x*2, [(1,2),(3,6)])==1.0"},
+      {name:"half", code:"assert evaluate(lambda x:x, [(1,1),(2,99)])==0.5"},
+      {name:"none", code:"assert evaluate(lambda x:0, [(1,1),(2,2)])==0.0"},
+    ]},
+  { id:"dc-boss", region:"deploy-citadel", title:"FINAL BOSS: Guardrail Pipeline", type:"boss", x:700, y:2200, requires:["dc-4"], xp:800,
+    brief:"FINAL BOSS. Production guardrail for an LLM endpoint.\n\nDefine process(text, banned, transform, fallback):\n  - text contains any word from `banned` (case-insensitive, whitespace-split) -> return fallback(text)\n  - else -> return transform(text)\n\nBeat this and you've cleared NEURON.",
+    starter:"def process(text, banned, transform, fallback):\n    pass\n",
+    hints:[
+      "words = set(text.lower().split()).",
+      "if any(b.lower() in words for b in banned): return fallback(text) else return transform(text).",
+    ],
+    tests:[
+      {name:"passes clean", code:"assert process('hello world', ['spam'], str.upper, lambda t:'BLOCKED')=='HELLO WORLD'"},
+      {name:"blocks banned", code:"assert process('buy spam now', ['spam'], str.upper, lambda t:'BLOCKED')=='BLOCKED'"},
+      {name:"case-insensitive", code:"assert process('SPAM here', ['spam'], str.upper, lambda t:'BLOCKED')=='BLOCKED'"},
+      {name:"transform applied", code:"assert process('abc', [], lambda t:t[::-1], lambda t:'X')=='cba'"},
+    ]},
+];
