@@ -22,9 +22,11 @@ jobs:
 
       - name: Every script parses
         run: |
+          fail=0
           for f in app.js quests.js tools/*.mjs; do
-            node --check "$f" && echo "OK  $f"
+            if node --check "$f"; then echo "OK  $f"; else echo "::error::$f does not parse"; fail=1; fi
           done
+          exit "$fail"
 
       # The quest graph is data, so a duplicate id, a prerequisite pointing at
       # nothing, or a cycle is a data bug that only shows up when a learner is
