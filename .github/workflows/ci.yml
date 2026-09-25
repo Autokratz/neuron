@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: syntax and quest graph
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Every script parses
+        run: |
+          for f in app.js quests.js tools/*.mjs; do
+            node --check "$f" && echo "OK  $f"
+          done
+
+      # The quest graph is data, so a duplicate id, a prerequisite pointing at
+      # nothing, or a cycle is a data bug that only shows up when a learner is
+      # already stuck on it.
+      - name: Quest graph is valid
+        run: node tools/validate-quests.mjs
+
+      - name: Every file the page loads exists
+        run: |
+          fail=0
+          for ref in $(grep -oE '(src|href)="[^"]+"' index.html | sed 's/.*="//;s/"//' | grep -v '^http'); do
+            if [ -f "$ref" ]; then echo "OK  $ref"; else echo "::error::index.html references missing $ref"; fail=1; fi
+          done
+          exit "$fail"
+
+      - name: The README count matches the data
+        run: |
+          actual=$(node -e '
+            const {readFileSync}=require("fs"), vm=require("vm");
+            const s={window:{}}; vm.createContext(s);
+            vm.runInContext(readFileSync("quests.js","utf8"),s);
+            console.log(s.window.QUESTS.length);')
+          echo "quests in data: $actual"
+          grep -qF "$actual graded coding quests" README.md || {
+            echo "::error::README does not state the real quest count ($actual)"; exit 1; }
+          echo "README matches"

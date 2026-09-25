@@ -1,6 +1,6 @@
 # NEURON — learn AI engineering as a skill-tree RPG
 
-**52 graded coding quests that execute and test real Python in the browser — no server, no account, no build step.** Python runs through Pyodide compiled to WebAssembly, and every quest is graded by a hidden `assert`-based test suite against your actual submission, not by string matching. Roughly 900 lines of vanilla JavaScript, HTML and CSS.
+**43 graded coding quests that execute and test real Python in the browser — no server, no account, no build step.** Python runs through Pyodide compiled to WebAssembly, and every quest is graded by a hidden `assert`-based test suite against your actual submission, not by string matching. Roughly 900 lines of vanilla JavaScript, HTML and CSS.
 
 ---
 
